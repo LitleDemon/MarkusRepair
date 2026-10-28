@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора — РемМастер</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <!-- Подключаем Chart.js для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo">🔧 РемМастер</a>
+            <nav class="nav">
+                <span class="nav-link active">Панель администратора</span>
+                <a href="#" class="btn btn-outline" id="logout-btn">Выйти</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" id="admin-dashboard">
+        <div class="dashboard-header">
+            <h1>Панель управления</h1>
+            <p>Добро пожаловать, <span id="user-name-display">Администратор</span>!</p>
+        </div>
+
+        <!-- Табы (вкладки) -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tab-requests">📋 Заявки</button>
+            <button class="tab-btn" data-tab="tab-inventory">📦 Склад</button>
+            <button class="tab-btn" data-tab="tab-staff">👥 Сотрудники</button>
+            <button class="tab-btn" data-tab="tab-stats">📊 Статистика</button>
+        </div>
+
+        <!-- Вкладка 1: Заявки -->
+        <div id="tab-requests" class="tab-content active">
+            <div class="card">
+                <h2>Все заявки</h2>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Клиент</th>
+                                <th>Услуга</th>
+                                <th>Статус</th>
+                                <th>Мастер</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-requests-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка 2: Склад -->
+        <div id="tab-inventory" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="dashboard-sidebar">
+                    <div class="card">
+                        <h2>Добавить запчасть</h2>
+                        <form id="add-inventory-form">
+                            <div class="form-group">
+                                <label for="inv-name">Название</label>
+                                <input type="text" id="inv-name" required placeholder="Например: Экран iPhone 14">
+                            </div>
+                            <div class="form-group">
+                                <label for="inv-qty">Количество</label>
+                                <input type="number" id="inv-qty" required min="1" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="inv-price">Цена (₽)</label>
+                                <input type="number" id="inv-price" required min="0" step="10" placeholder="5000">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Добавить</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="dashboard-main">
+                    <div class="card">
+                        <h2>Склад запчастей</h2>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Название</th>
+                                        <th>Количество</th>
+                                        <th>Цена (₽)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-inventory-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка 3: Сотрудники -->
+        <div id="tab-staff" class="tab-content">
+            <div class="card">
+                <h2>Список сотрудников</h2>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ФИО</th>
+                                <th>Email</th>
+                                <th>Роль</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-staff-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка 4: Статистика -->
+        <div id="tab-stats" class="tab-content">
+            <div class="charts-grid">
+                <div class="card">
+                    <h2>Заявки по статусам</h2>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Доход по месяцам (₽)</h2>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальное окно для назначения мастера -->
+    <div id="assign-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" id="close-assign-modal">&times;</span>
+            <h2>Назначить мастера <span id="assign-request-id"></span></h2>
+            <form id="assign-form">
+                <input type="hidden" id="assign-req-id-input">
+                <div class="form-group">
+                    <label for="master-select">Выберите мастера</label>
+                    <select id="master-select" required>
+                        <!-- Заполняется через JS -->
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Назначить</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

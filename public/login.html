@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — РемМастер</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo">🔧 РемМастер</a>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Услуги</a>
+                <a href="login.html" class="nav-link active">Войти</a>
+                <a href="register.html" class="btn btn-primary">Регистрация</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container auth-main">
+        <div class="auth-container">
+            <h2>Вход в систему</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="client@test.ru">
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Войти</button>
+            </form>
+            <p class="auth-switch">Нет аккаунта? <a href="register.html">Зарегистрируйтесь</a></p>
+            <p class="auth-hint">Тестовые аккаунты: <br> client@test.ru / master@test.ru / admin@test.ru <br> (пароль любой)</p>
+        </div>
+    </main>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>

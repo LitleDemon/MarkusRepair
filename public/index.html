@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ремонтная мастерская — Каталог услуг</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo">🔧 РемМастер</a>
+            <nav class="nav">
+                <a href="index.html" class="nav-link active">Услуги</a>
+                <a href="#" class="nav-link" id="nav-profile">Личный кабинет</a>
+                <a href="login.html" class="btn btn-outline" id="nav-login">Войти</a>
+                <a href="register.html" class="btn btn-primary" id="nav-register">Регистрация</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Ремонт техники быстро и качественно</h1>
+            <p>Оставьте заявку — мы диагностируем и починим ваше устройство.</p>
+        </section>
+
+        <section class="services-section">
+            <h2>Наши услуги</h2>
+            <div id="services-grid" class="services-grid">
+                <!-- Карточки услуг будут добавлены через JS -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 Ремонтная мастерская. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Подключаем скрипты -->
+    <script src="js/api.js"></script>
+    <script src="js/client.js"></script>
+</body>
+</html>

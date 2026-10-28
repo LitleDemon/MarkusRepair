@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рабочее место мастера — РемМастер</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo">🔧 РемМастер</a>
+            <nav class="nav">
+                <span class="nav-link active">Кабинет мастера</span>
+                <a href="#" class="btn btn-outline" id="logout-btn">Выйти</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" id="master-dashboard">
+        <div class="dashboard-header">
+            <h1>Рабочее место мастера</h1>
+            <p>Добро пожаловать, <span id="user-name-display">Мастер</span>!</p>
+        </div>
+
+        <div class="card">
+            <h2>Назначенные заявки</h2>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Услуга</th>
+                            <th>Описание от клиента</th>
+                            <th>Дата</th>
+                            <th>Статус</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="master-requests-table-body">
+                        <!-- Сюда JS будет вставлять строки -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальное окно для редактирования заявки -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" id="close-modal">&times;</span>
+            <h2>Обработка заявки <span id="modal-request-id"></span></h2>
+            
+            <form id="edit-request-form">
+                <input type="hidden" id="modal-req-id-input">
+
+                <div class="form-group">
+                    <label for="modal-status">Изменить статус</label>
+                    <select id="modal-status" required>
+                        <option value="accepted">Принята</option>
+                        <option value="diagnostics">В диагностике</option>
+                        <option value="in_repair">В ремонте</option>
+                        <option value="ready">Готова к выдаче</option>
+                        <option value="issued">Выдана</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="modal-comment">Комментарий (виден клиенту)</label>
+                    <textarea id="modal-comment" rows="3" placeholder="Например: Требуется замена экрана..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modal-parts">Использованные запчасти</label>
+                        <input type="text" id="modal-parts" placeholder="Экран iPhone 13 - 1 шт.">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-cost">Итоговая стоимость (₽)</label>
+                        <input type="number" id="modal-cost" min="0" step="50" placeholder="0">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-block">Сохранить изменения</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/master.js"></script>
+</body>
+</html>

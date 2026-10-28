@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет — РемМастер</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo">🔧 РемМастер</a>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Услуги</a>
+                <a href="client-dashboard.html" class="nav-link active">Личный кабинет</a>
+                <a href="#" class="btn btn-outline" id="logout-btn">Выйти</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" id="client-dashboard">
+        <div class="dashboard-header">
+            <h1>Личный кабинет</h1>
+            <p>Добро пожаловать, <span id="user-name-display">Клиент</span>!</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Левая колонка: Создание заявки -->
+            <section class="dashboard-sidebar">
+                <div class="card">
+                    <h2>Новая заявка</h2>
+                    <form id="new-request-form">
+                        <div class="form-group">
+                            <label for="service-select">Выберите услугу</label>
+                            <select id="service-select" required>
+                                <option value="">-- Загрузка услуг --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="request-desc">Описание неисправности</label>
+                            <textarea id="request-desc" rows="4" required placeholder="Опишите, что случилось с устройством..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="request-photo">Фото устройства (необязательно)</label>
+                            <input type="file" id="request-photo" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Отправить заявку</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Правая колонка: История заявок -->
+            <section class="dashboard-main">
+                <div class="card">
+                    <h2>Мои заявки</h2>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Услуга</th>
+                                    <th>Дата</th>
+                                    <th>Статус</th>
+                                    <th>Стоимость</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requests-table-body">
+                                <!-- Сюда JS будет вставлять строки -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/client.js"></script>
+</body>
+</html>
