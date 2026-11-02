@@ -3,7 +3,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     if (!document.getElementById('admin-dashboard')) return;
 
-    // 1. Проверка авторизации
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
     if (!token || role !== 'admin') {
@@ -19,48 +18,38 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'index.html';
     });
 
-    // 2. Настройка табов
     setupTabs();
-
-    // 3. Загрузка данных для всех вкладок
     loadAdminRequests();
     loadInventory();
     loadStaff();
     initCharts();
 
-    // 4. Обработчики форм
     document.getElementById('add-inventory-form').addEventListener('submit', handleAddInventory);
     setupAssignModal();
 });
 
-// ===== 1. ЛОГИКА ТАБОВ =====
 function setupTabs() {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Убираем активный класс у всех
             tabBtns.forEach(b => b.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
-
-            // Добавляем активный текущему
             btn.classList.add('active');
-            const targetId = btn.getAttribute('data-tab');
-            document.getElementById(targetId).classList.add('active');
+            document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
         });
     });
 }
 
-// ===== 2. ВКЛАДКА "ЗАЯВКИ" =====
 async function loadAdminRequests() {
     const tbody = document.getElementById('admin-requests-table-body');
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Загрузка...</td></tr>';
 
     try {
-        const [requests, masters] = await Promise.all([getAllRequests(), getAllMasters()]);
-        
+        const requests = await getAllRequests();
         tbody.innerHTML = '';
+        
         const statusNames = {
             'accepted': 'Принята', 'diagnostics': 'Диагностика',
             'in_repair': 'В ремонте', 'ready': 'Готова к выдаче', 'issued': 'Выдана'
@@ -68,13 +57,12 @@ async function loadAdminRequests() {
 
         requests.forEach(req => {
             const tr = document.createElement('tr');
-            // Ищем имя мастера по ID
-            const master = masters.find(m => m.id === req.master_id);
-            const masterName = master ? master.full_name : '<span style="color:red;">Не назначен</span>';
+            // Бэкенд возвращает master_name напрямую (JOIN в контроллере)
+            const masterName = req.master_name ? req.master_name : '<span style="color:red;">Не назначен</span>';
             
             tr.innerHTML = `
                 <td>#${req.id}</td>
-                <td>Клиент (ID: ${req.client_id || 1})</td>
+                <td>Клиент (ID: ${req.client_id})</td>
                 <td>${req.service_title}</td>
                 <td><span class="status-badge status-${req.status}">${statusNames[req.status]}</span></td>
                 <td>${masterName}</td>
@@ -89,8 +77,6 @@ async function loadAdminRequests() {
     }
 }
 
-// Модалка назначения мастера
-let mastersCache = [];
 async function openAssignModal(reqId) {
     document.getElementById('assign-request-id').textContent = `#${reqId}`;
     document.getElementById('assign-req-id-input').value = reqId;
@@ -98,12 +84,15 @@ async function openAssignModal(reqId) {
     const select = document.getElementById('master-select');
     select.innerHTML = '<option value="">-- Выберите --</option>';
     
-    mastersCache = await getAllMasters();
-    mastersCache.forEach(m => {
-        select.innerHTML += `<option value="${m.id}">${m.full_name} (ID: ${m.id})</option>`;
-    });
-
-    document.getElementById('assign-modal').classList.add('active');
+    try {
+        const masters = await getAllMasters();
+        masters.forEach(m => {
+            select.innerHTML += `<option value="${m.id}">${m.full_name} (ID: ${m.id})</option>`;
+        });
+        document.getElementById('assign-modal').classList.add('active');
+    } catch (err) {
+        alert("Ошибка загрузки мастеров");
+    }
 }
 
 function setupAssignModal() {
@@ -118,29 +107,35 @@ function setupAssignModal() {
         
         if (!masterId) return alert('Выберите мастера');
 
-        await assignMasterToRequest(reqId, masterId);
-        modal.classList.remove('active');
-        loadAdminRequests(); // Обновляем таблицу
-        alert('Мастер назначен!');
+        try {
+            await assignMasterToRequest(reqId, masterId);
+            modal.classList.remove('active');
+            loadAdminRequests();
+            alert('Мастер назначен!');
+        } catch (err) {
+            alert("Ошибка при назначении");
+        }
     });
 }
 
-// ===== 3. ВКЛАДКА "СКЛАД" =====
 async function loadInventory() {
     const tbody = document.getElementById('admin-inventory-table-body');
-    const items = await getInventory();
-    
-    tbody.innerHTML = '';
-    items.forEach(item => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${item.id}</td>
-                <td>${item.part_name}</td>
-                <td>${item.quantity} шт.</td>
-                <td>${item.price} ₽</td>
-            </tr>
-        `;
-    });
+    try {
+        const items = await getInventory();
+        tbody.innerHTML = '';
+        items.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.id}</td>
+                    <td>${item.part_name}</td>
+                    <td>${item.quantity} шт.</td>
+                    <td>${item.price} ₽</td>
+                </tr>
+            `;
+        });
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color:red;">Ошибка загрузки</td></tr>';
+    }
 }
 
 async function handleAddInventory(e) {
@@ -149,72 +144,80 @@ async function handleAddInventory(e) {
     const qty = document.getElementById('inv-qty').value;
     const price = document.getElementById('inv-price').value;
 
-    await addInventoryItem({ part_name: name, quantity: qty, price: price });
-    e.target.reset();
-    loadInventory(); // Обновляем таблицу
-    alert('Запчасть добавлена на склад!');
+    try {
+        await addInventoryItem({ part_name: name, quantity: qty, price: price });
+        e.target.reset();
+        loadInventory();
+        alert('Запчасть добавлена на склад!');
+    } catch (err) {
+        alert("Ошибка при добавлении");
+    }
 }
 
-// ===== 4. ВКЛАДКА "СОТРУДНИКИ" =====
 async function loadStaff() {
     const tbody = document.getElementById('admin-staff-table-body');
-    const masters = await getAllMasters();
-    
-    tbody.innerHTML = '';
-    masters.forEach(m => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${m.id}</td>
-                <td>${m.full_name}</td>
-                <td>${m.email}</td>
-                <td><span class="status-badge status-ready">${m.role}</span></td>
-            </tr>
-        `;
-    });
+    try {
+        const masters = await getAllMasters();
+        tbody.innerHTML = '';
+        masters.forEach(m => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${m.id}</td>
+                    <td>${m.full_name}</td>
+                    <td>${m.email}</td>
+                    <td><span class="status-badge status-ready">${m.role}</span></td>
+                </tr>
+            `;
+        });
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color:red;">Ошибка загрузки</td></tr>';
+    }
 }
 
-// ===== 5. ВКЛАДКА "СТАТИСТИКА" (ГРАФИКИ) =====
 async function initCharts() {
-    const stats = await getAdminStats();
+    try {
+        const stats = await getAdminStats();
 
-    // График 1: Круговая диаграмма статусов
-    const ctxStatus = document.getElementById('statusChart').getContext('2d');
-    new Chart(ctxStatus, {
-        type: 'doughnut',
-        data: {
-            labels: ['Принята', 'Диагностика', 'В ремонте', 'Готова', 'Выдана'],
-            datasets: [{
-                data: Object.values(stats.requestsByStatus),
-                backgroundColor: ['#3b82f6', '#f59e0b', '#f97316', '#10b981', '#64748b']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
+        const ctxStatus = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctxStatus, {
+            type: 'doughnut',
+            data: {
+                labels: ['Принята', 'Диагностика', 'В ремонте', 'Готова', 'Выдана'],
+                datasets: [{
+                    data: [
+                        stats.requestsByStatus.accepted || 0,
+                        stats.requestsByStatus.diagnostics || 0,
+                        stats.requestsByStatus.in_repair || 0,
+                        stats.requestsByStatus.ready || 0,
+                        stats.requestsByStatus.issued || 0
+                    ],
+                    backgroundColor: ['#3b82f6', '#f59e0b', '#f97316', '#10b981', '#64748b']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
 
-    // График 2: Линейный график дохода
-    const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
-    new Chart(ctxRevenue, {
-        type: 'line',
-        data: {
-            labels: ['Май', 'Июнь', 'Июль', 'Авг', 'Сент', 'Окт'],
-            datasets: [{
-                label: 'Доход (₽)',
-                data: stats.revenueByMonth,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.3 // Плавные линии
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true }
+        const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctxRevenue, {
+            type: 'line',
+            data: {
+                labels: ['Май', 'Июнь', 'Июль', 'Авг', 'Сент', 'Окт'],
+                datasets: [{
+                    label: 'Доход (₽)',
+                    data: stats.revenueByMonth,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } }
             }
-        }
-    });
+        });
+    } catch (err) {
+        console.error("Ошибка графиков", err);
+    }
 }

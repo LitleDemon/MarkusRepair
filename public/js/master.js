@@ -1,10 +1,8 @@
 // ===== master.js =====
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Проверяем, что мы на странице мастера
     if (!document.getElementById('master-dashboard')) return;
 
-    // 1. Проверка авторизации и роли
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
     
@@ -14,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // 2. Отображение имени и кнопка выхода
     document.getElementById('user-name-display').textContent = localStorage.getItem('userName') || 'Мастер';
     document.getElementById('logout-btn').addEventListener('click', (e) => {
         e.preventDefault();
@@ -22,10 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'index.html';
     });
 
-    // 3. Загрузка заявок
     loadMasterRequests();
-
-    // 4. Обработчики модального окна
     setupModal();
 });
 
@@ -70,25 +64,21 @@ async function loadMasterRequests() {
     }
 }
 
-// ===== Логика модального окна =====
-let currentRequestsCache = []; // Кэш для быстрого доступа к данным заявки
+let currentRequestsCache = [];
 
 async function openEditModal(requestId) {
-    // Загружаем актуальные данные заявок, чтобы заполнить форму
     currentRequestsCache = await getMasterRequests();
     const req = currentRequestsCache.find(r => r.id == requestId);
     
     if (!req) return;
 
-    // Заполняем форму
     document.getElementById('modal-request-id').textContent = `#${req.id}`;
     document.getElementById('modal-req-id-input').value = req.id;
     document.getElementById('modal-status').value = req.status;
     document.getElementById('modal-cost').value = req.total_cost;
-    document.getElementById('modal-comment').value = ''; // Очищаем
-    document.getElementById('modal-parts').value = '';   // Очищаем
+    document.getElementById('modal-comment').value = req.master_comment || '';
+    document.getElementById('modal-parts').value = req.used_parts || '';
 
-    // Открываем модалку
     document.getElementById('edit-modal').classList.add('active');
 }
 
@@ -97,15 +87,9 @@ function setupModal() {
     const closeBtn = document.getElementById('close-modal');
     const form = document.getElementById('edit-request-form');
 
-    // Закрытие по крестику
     closeBtn.onclick = () => modal.classList.remove('active');
-    
-    // Закрытие по клику вне окна
-    window.onclick = (e) => {
-        if (e.target === modal) modal.classList.remove('active');
-    };
+    window.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
 
-    // Отправка формы
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -124,10 +108,9 @@ function setupModal() {
             
             modal.classList.remove('active');
             alert('Изменения сохранены!');
-            await loadMasterRequests(); // Обновляем таблицу
-            
+            await loadMasterRequests();
         } catch (error) {
-            alert('Ошибка сохранения');
+            alert('Ошибка сохранения: ' + error.message);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Сохранить изменения';
